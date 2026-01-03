@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>Local Garrison Police Force</title>
+	<style>
+	:root{--bg:#0b0e12;--card:rgba(255,255,255,0.03);--accent:#2dd4bf;--text:#e6eef6;}
+	*{box-sizing:border-box}html,body{height:100%}
+	body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#050607,#0b0e12);color:var(--text);-webkit-font-smoothing:antialiased}
+	/* Top bar */
+	.topbar{position:fixed;top:12px;left:12px;right:12px;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-radius:12px;backdrop-filter: blur(8px) saturate(120%);background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));box-shadow:0 6px 20px rgba(2,6,23,0.6);z-index:60}
+	.brand{font-weight:700;letter-spacing:0.6px;font-size:14px;color:var(--accent)}
+	.nav{display:flex;gap:12px}
+	.nav-link{padding:8px 12px;border-radius:8px;color:var(--text);text-decoration:none;font-size:13px;opacity:0.9;transition:all .18s}
+	.nav-link:hover{background:var(--card);transform:translateY(-2px)}
+	.nav-link.active{background:linear-gradient(90deg, rgba(45,212,191,0.12), rgba(45,212,191,0.06));color:var(--accent)}
+	/* Page layout */
+	main, section{display:none;min-height:100vh;padding-top:80px}
+	.page.active{display:block}
+	/* Home hero + bg */
+	.hero{position:relative;min-height:calc(100vh - 32px);display:flex;align-items:center;justify-content:center;overflow:hidden;padding-top:56px}
+	.bg{position:absolute;inset:0;background-image:url('Background.png');background-size:cover;background-position:center;filter:brightness(0.46) saturate(1.05) contrast(1.02);opacity:0;transform:scale(1.03);animation:fadeInBg 1.2s cubic-bezier(.2,.9,.2,1) forwards;z-index:0}
+	.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg, rgba(3,6,10,0.25), rgba(6,8,12,0.6));pointer-events:none;z-index:1}
+	.hero-content{position:relative;z-index:10;text-align:center;padding:48px;max-width:980px}
+	.hero-content h1{margin:0;font-size:44px;letter-spacing:0.6px;color:var(--text);text-shadow:0 6px 30px rgba(3,6,10,0.6)}
+	.subtitle{margin-top:12px;color:rgba(230,238,246,0.82);font-size:16px}
+	.discord-link{margin-top:20px;font-size:24px;padding:12px 20px;border-radius:8px;color:var(--accent);text-decoration:none;border:2px solid var(--accent);transition:all .2s}
+	.discord-link:hover{background:var(--accent);color:#021}
+	@keyframes fadeInBg{from{opacity:0;transform:scale(1.06)}to{opacity:1;transform:scale(1)}}
+
+	/* Panels */
+	.panel{padding:48px 20px;max-width:1100px;margin:24px auto;border-radius:12px;text-align:center}
+	/* Scroll frames for Rank Info */
+	.frame-scroll{
+		height:calc(100vh - 220px);
+		max-width:900px;
+		margin:0 auto;
+		padding:16px;
+		border-radius:12px;
+		background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+		overflow-y:auto;
+		display:flex;
+		flex-direction:column;
+		align-items:center;
+		justify-content:flex-start;
+		gap:12px;
+	}
+	/* Ranks grid: 3 columns */
+	.rank-list{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:700px}
+	.rank-item{padding:14px;border-radius:10px;background:rgba(255,255,255,0.02);text-align:center;cursor:pointer;user-select:none;display:flex;flex-direction:column;gap:8px}
+	.rank-item:hover{transform:translateY(-6px);box-shadow:0 8px 30px rgba(0,0,0,0.45)}
+	.rank-item:active{transform:translateY(-2px)}
+	.rank-item .desc{display:none;color:rgba(230,238,246,0.9);font-size:12px;margin:0}
+	.rank-item.expanded .desc{display:block}
+	/* Rank Info list styling */
+	dl{width:100%}
+	dt{font-weight:700;margin-top:12px}
+	dd{margin:6px 0 12px 0;padding-left:6px;color:rgba(230,238,246,0.9)}
+	/* Management scroll frame */
+	.mgmt-frame{height:calc(100vh - 180px);max-width:1100px;margin:0 auto;padding:20px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);overflow:auto;display:flex;flex-direction:column;gap:16px}
+	.person{display:flex;align-items:center;gap:18px;padding:14px;border-radius:12px;background:rgba(255,255,255,0.02);backdrop-filter:blur(4px)}
+	.avatar{position:relative;width:96px;height:96px;flex:0 0 96px;border-radius:50%;overflow:hidden;display:inline-block}
+	.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+	.avatar .name-overlay{position:absolute;left:0;right:0;top:6px;padding:6px;text-align:center;font-weight:700;font-size:13px;color:#fff;text-shadow:0 4px 12px rgba(0,0,0,0.6);background:linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.04))}
+	.person .meta{color:rgba(230,238,246,0.9)}
+	.rank{font-weight:600;color:var(--accent);margin-top:6px}
+	/* Responsive */
+	@media (max-width:720px){
+		.topbar{left:10px;right:10px;padding:0 10px}
+		.hero-content h1{font-size:28px}
+		.avatar{width:76px;height:76px;flex:0 0 76px}
+		.rank-list{grid-template-columns:1fr}
+	}
+	</style>
+</head>
+<body>
+	<header class="topbar">
+		<div class="brand">Local Garrison Police Force</div>
+		<nav class="nav">
+			<a href="#home" class="nav-link" data-target="home">Home Page</a>
+			<a href="#rank-info" class="nav-link" data-target="rank-info">Rank Info</a>
+			<a href="#ranks" class="nav-link" data-target="ranks">Ranks</a>
+			<a href="#management" class="nav-link" data-target="management">Management</a>
+			<a href="#uniforms" class="nav-link" data-target="uniforms">Uniforms</a>
+		</nav>
+	</header>
+
+	<!-- home page -->
+	<main id="home" class="page hero active">
+		<div class="bg"></div>
+		<div class="hero-content">
+			<h1>Local Garrison Police Force</h1>
+			<p class="subtitle">Serving the community with honor and duty</p>
+			<a href="https://discord.gg/8e6bZHmpA9" target="_blank" class="discord-link">Discord Server</a>
+		</div>
+	</main>
+
+	<!-- Rank Info page (centered scroll frame) -->
+	<section id="rank-info" class="page panel" aria-labelledby="rank-info-title">
+		<h2 id="rank-info-title">Rank Info</h2>
+		<div class="frame-scroll rank-info-frame">
+			<dl>
+				<dt>New Attendee</dt><dd>New Members of the Server and Community</dd>
+				<dt>Junior Constable</dt><dd>Members who took a Orientation</dd>
+				<dt>Police Officer</dt><dd>Members who took 5 Orientations</dd>
+				<dt>Senior Police Officer</dt><dd>Members who have 30 rank points</dd>
+				<dt>Corporal Officer</dt><dd>Members who took a Corporal Exam hosted by Sergeants+</dd>
+				<dt>Police Sergeant</dt><dd>Members who took a Sergeant Exam Hosted by Captain+</dd>
+				<dt>Police Lieutenant</dt><dd>Members who Passed LT. apps hosted by the Commissioner or Deputy Commissioner</dd>
+				<dt>Police Captain</dt><dd>Members chosen by the SOP</dd>
+				<dt>Police Inspector</dt><dd>Members who show leadership skills and are promoted then by the Management Team</dd>
+				<dt>Police Chief Inspector</dt><dd>Members chosen by the Commissioner to lead operations of the Server</dd>
+				<dt>Moderation Team</dt><dd>Keeping the Server Safe</dd>
+				<dt>Secretary Of Police</dt><dd>Maintaing All staff</dd>
+				<dt>Police Deputy Commissioner</dt><dd>The Deputy Owner helping with the Servers Operations</dd>
+				<dt>Police Commissioner</dt><dd>The Owner and Head of Operations</dd>
+			</dl>
+		</div>
+	</section>
+
+	<!-- Ranks page (3x5 grid, no scrollbar) -->
+	<section id="ranks" class="page panel" aria-labelledby="ranks-title">
+		<h2 id="ranks-title">Ranks</h2>
+		<div class="rank-list">
+			<div class="rank-item" data-rank="New Attendee"><span>New Attendee</span><p class="desc">New Members of the Server and Community</p></div>
+			<div class="rank-item" data-rank="Junior Constable"><span>Junior Constable</span><p class="desc">Members who took a Orientation</p></div>
+			<div class="rank-item" data-rank="Police Officer"><span>Police Officer</span><p class="desc">Members who took 5 Orientations</p></div>
+			<div class="rank-item" data-rank="Senior Police Officer"><span>Senior Police Officer</span><p class="desc">Members who have 30 rank points</p></div>
+			<div class="rank-item" data-rank="Corporal Officer"><span>Corporal Officer</span><p class="desc">Members who took a Corporal Exam hosted by Sergeants+</p></div>
+			<div class="rank-item" data-rank="Police Sergeant"><span>Police Sergeant</span><p class="desc">Members who took a Sergeant Exam Hosted by Captain+</p></div>
+			<div class="rank-item" data-rank="Police Lieutenant"><span>Police Lieutenant</span><p class="desc">Members who Passed LT. apps hosted by the Commissioner or Deputy Commissioner</p></div>
+			<div class="rank-item" data-rank="Police Captain"><span>Police Captain</span><p class="desc">Members chosen by the SOP</p></div>
+			<div class="rank-item" data-rank="Police Inspector"><span>Police Inspector</span><p class="desc">Members who show leadership skills and are promoted then by the Management Team</p></div>
+			<div class="rank-item" data-rank="Police Chief Inspector"><span>Police Chief Inspector</span><p class="desc">Members chosen by the Commissioner to lead operations of the Server</p></div>
+			<div class="rank-item" data-rank="Moderation Team"><span>Moderation Team</span><p class="desc">Keeping the Server Safe</p></div>
+			<div class="rank-item" data-rank="Secretary Of Police"><span>Secretary Of Police</span><p class="desc">Maintaing All staff</p></div>
+			<div class="rank-item" data-rank="Police Deputy Commissioner"><span>Police Deputy Commissioner</span><p class="desc">The Deputy Owner helping with the Servers Operations</p></div>
+			<div class="rank-item" data-rank="Police Commissioner"><span>Police Commissioner</span><p class="desc">The Owner and Head of Operations</p></div>
+			<div class="rank-item" data-rank="Server Owner"><span>Server Owner</span><p class="desc">Navigate to Server Owner page</p></div>
+		</div>
+	</section>
+
+	<!-- Server Owner page -->
+	<section id="server-owner" class="page panel" aria-labelledby="server-owner-title">
+		<h2 id="server-owner-title">Server Owner</h2>
+		<p>Server Owner Blox and the Creator and Founder of LGPF as well as the Current leader a long side him is the Deputy Owner Ruk who makes and made the Uniforms</p>
+	</section>
+
+	<!-- Management page (scroll frame with circular images + labels) -->
+	<section id="management" class="page panel" aria-labelledby="management-title">
+		<h2 id="management-title">Management</h2>
+		<div class="mgmt-frame" role="list">
+			<!-- Blox -->
+			<div class="person" role="listitem">
+				<div class="avatar">
+					<img src="Blox.Png" alt="Blox">
+					<div class="name-overlay">Blox</div>
+				</div>
+				<div class="meta">
+					<div class="rank">Police Commissioner</div>
+				</div>
+			</div>
+			<!-- Ruk -->
+			<div class="person" role="listitem">
+				<div class="avatar">
+					<img src="Ruk.Png" alt="Ruk">
+					<div class="name-overlay">Ruk</div>
+				</div>
+				<div class="meta">
+					<div class="rank">Deputy Police Commissioner</div>
+				</div>
+			</div>
+			<!-- Smile -->
+			<div class="person" role="listitem">
+				<div class="avatar">
+					<img src="Smile.Png" alt="Smile">
+					<div class="name-overlay">Smile</div>
+				</div>
+				<div class="meta">
+					<div class="rank">Secretary of Police</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<!-- Uniforms page -->
+	<section id="uniforms" class="page panel" aria-labelledby="uniforms-title">
+		<h2 id="uniforms-title">Uniforms</h2>
+		<p>Coming Soon</p>
+	</section>
+
+	<script>
+	(function(){
+		const links = Array.from(document.querySelectorAll('.nav-link'));
+		const pages = Array.from(document.querySelectorAll('.page'));
+		const rankItems = Array.from(document.querySelectorAll('.rank-item'));
+		const bg = document.querySelector('.bg');
+
+		function show(id){
+			pages.forEach(p=>p.classList.toggle('active', p.id===id));
+			links.forEach(a=>a.classList.toggle('active', a.dataset.target===id));
+			if(location.hash !== '#'+id) history.replaceState(null,'', '#'+id);
+			// Change background for server-owner
+			if(id === 'server-owner'){
+				bg.style.backgroundImage = "url('SO.png')";
+			}else{
+				bg.style.backgroundImage = "url('Background.png')";
+			}
+		}
+
+		links.forEach(a=>a.addEventListener('click',(e)=>{ e.preventDefault(); show(a.dataset.target); }));
+
+		rankItems.forEach(item=>{
+			item.addEventListener('click', ()=>{
+				const r = item.dataset.rank || item.querySelector('span').textContent.trim();
+				if(r === 'Server Owner'){
+					show('server-owner');
+				}else{
+					// Toggle expansion for others
+					item.classList.add('expanded');
+					setTimeout(() => item.classList.remove('expanded'), 5000);
+				}
+			});
+		});
+
+		// initial route
+		const initial = (location.hash && location.hash.slice(1)) || 'home';
+		if(document.getElementById(initial)) show(initial); else show('home');
+
+		// support back/forward
+		window.addEventListener('hashchange', ()=>{ const id = location.hash.slice(1)||'home'; if(document.getElementById(id)) show(id); });
+	})();
+	</script>
+</body>
+</html>
